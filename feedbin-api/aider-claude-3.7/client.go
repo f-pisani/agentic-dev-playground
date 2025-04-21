@@ -74,6 +74,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Accept", "application/json")
 	
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
