@@ -4,7 +4,7 @@ A collection of experiments exploring agentic AI tools for developers. This repo
 
 ## Editor / Plugin / CLI
 
-- [Aider——](https://aider.chat/)AI pair programming in your terminal
+- [Aider](https://aider.chat/)AI pair programming in your terminal
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) - Anthropic's command-line interface for AI-assisted coding
 - [Cursor](https://www.cursor.com/) - AI-native code editor built on top of VS Code
 - [JetBrains - Augment plugin](https://plugins.jetbrains.com/plugin/24072-augment) - AI assistant plugin for JetBrains IDEs
