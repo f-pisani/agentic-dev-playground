@@ -96,7 +96,7 @@ func (c *Client) DeleteSavedSearch(id int64) error {
 // GetSavedSearchResults retrieves entries matching a saved search
 func (c *Client) GetSavedSearchResults(id int64) ([]Entry, error) {
 	// First get the saved search to get the query
-	search, err := c.GetSavedSearch(id)
+	_, err := c.GetSavedSearch(id)
 	if err != nil {
 		return nil, err
 	}

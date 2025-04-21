@@ -3,7 +3,6 @@ package feedbin
 import (
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 

@@ -1,9 +1,7 @@
 package feedbin
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 )
 
 // GetUnreadEntries retrieves all unread entry IDs
