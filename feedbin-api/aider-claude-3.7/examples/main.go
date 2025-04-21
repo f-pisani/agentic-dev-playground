@@ -17,6 +17,8 @@ func main() {
 		log.Fatal("Please set FEEDBIN_USERNAME and FEEDBIN_PASSWORD environment variables")
 	}
 	
+	fmt.Println("Using Feedbin API with username:", username)
+	
 	// Create a new client
 	client := feedbin.NewClient(username, password)
 	

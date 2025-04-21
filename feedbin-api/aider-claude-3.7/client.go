@@ -74,7 +74,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("User-Agent", UserAgent)
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json; charset=utf-8")
 	
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
@@ -93,12 +93,22 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	defer resp.Body.Close()
 	
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return resp, fmt.Errorf("API error: %s", resp.Status)
+		// Try to read error details if available
+		var errorResponse ErrorResponse
+		body, _ := io.ReadAll(resp.Body)
+		
+		// Log the response body for debugging
+		errorMsg := fmt.Sprintf("API error: %s", resp.Status)
+		if len(body) > 0 {
+			errorMsg += fmt.Sprintf(" - Response: %s", string(body))
+		}
+		
+		return resp, fmt.Errorf(errorMsg)
 	}
 	
 	if v != nil && resp.StatusCode != http.StatusNoContent {
 		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
-			return resp, err
+			return resp, fmt.Errorf("JSON decode error: %v", err)
 		}
 	}
 	
