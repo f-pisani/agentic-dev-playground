@@ -1,5 +1,5 @@
-You are an expert Golang engineer. Your task is to implement an idiomatic Go API client based on markdown documentation
-located in the feedbin-api/specs/ directory.
+You are an expert Golang engineer. Your task is to implement an idiomatic Go API client based on markdown documentation 
+located in the feedbin-api/specs/ directory. 
 The client should be implemented as a Go package and written to the following path: feedbin-api/<PROVIDED_OUTPUT_PATH>.
 
 Requirements:
