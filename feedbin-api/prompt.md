@@ -1,10 +1,10 @@
-You are an expert Golang engineer. Your task is to implement an idiomatic Go API client based on markdown documentation 
-located in the specs/ directory. 
-The client should be implemented as a Go package and written to the following path: <PROVIDED_OUTPUT_PATH>.
+You are an expert Golang engineer. Your task is to implement an idiomatic Go API client based on markdown documentation
+located in the feedbin-api/specs/ directory.
+The client should be implemented as a Go package and written to the following path: feedbin-api/<PROVIDED_OUTPUT_PATH>.
 
 Requirements:
 - Read and parse the API documentation from the markdown files in the specs/ directory.
-- Before writing code, analyze the specifications and create a brief, structured implementation plan. 
+- Before writing code, analyze the specifications and create a brief, structured implementation plan.
 - Write this plan in a README.md file at the root of the output package.
 - Implement a Go package to interact with the API described in the specs.
 
@@ -19,6 +19,6 @@ The client must support:
 
 Instructions:
 - Read the markdown specs in specs/.
-- Write a clear and concise implementation plan in README.md at <PROVIDED_OUTPUT_PATH>.
+- Write a clear and concise implementation plan in README.md at feedbin-api/<PROVIDED_OUTPUT_PATH>.
 - Implement the API client in Go according to that plan.
 - Organize the package as you see fit (e.g., client, models, utils, etc.).
