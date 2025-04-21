@@ -116,8 +116,8 @@ type SavedSearch struct {
 
 // Icon represents a Feedbin feed icon.
 type Icon struct {
-	ID  int    `json:"id"`
-	URL string `json:"url"`
+	Host string `json:"host"`
+	URL  string `json:"url"`
 }
 
 // Import represents a Feedbin import.
