@@ -7,7 +7,7 @@ import (
 
 // GetPages retrieves all pages
 func (c *Client) GetPages() ([]Page, error) {
-	req, err := c.NewRequest(http.MethodGet, "/pages.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/pages.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (c *Client) GetPages() ([]Page, error) {
 
 // GetPage retrieves a specific page by ID
 func (c *Client) GetPage(id int64) (*Page, error) {
-	path := fmt.Sprintf("/pages/%d.json", id)
+	path := fmt.Sprintf("/v2/pages/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (c *Client) GetPage(id int64) (*Page, error) {
 
 // GetEntryPages retrieves all pages for a specific entry
 func (c *Client) GetEntryPages(entryID int64) ([]Page, error) {
-	path := fmt.Sprintf("/entries/%d/pages.json", entryID)
+	path := fmt.Sprintf("/v2/entries/%d/pages.json", entryID)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err

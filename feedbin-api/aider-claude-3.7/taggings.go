@@ -7,7 +7,7 @@ import (
 
 // GetTaggings retrieves all taggings
 func (c *Client) GetTaggings() ([]Tagging, error) {
-	req, err := c.NewRequest(http.MethodGet, "/taggings.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/taggings.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (c *Client) CreateTagging(feedID int64, name string) (*Tagging, error) {
 		Name:   name,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/taggings.json", taggingReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/taggings.json", taggingReq)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (c *Client) CreateTagging(feedID int64, name string) (*Tagging, error) {
 
 // DeleteTagging deletes a tagging
 func (c *Client) DeleteTagging(id int64) error {
-	path := fmt.Sprintf("/taggings/%d.json", id)
+	path := fmt.Sprintf("/v2/taggings/%d.json", id)
 	req, err := c.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return err

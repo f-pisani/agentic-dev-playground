@@ -6,7 +6,7 @@ import (
 
 // GetStarredEntries retrieves all starred entry IDs
 func (c *Client) GetStarredEntries() ([]int64, error) {
-	req, err := c.NewRequest(http.MethodGet, "/starred_entries.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/starred_entries.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (c *Client) StarEntries(entryIDs []int64) error {
 		StarredEntries: entryIDs,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/starred_entries.json", starredReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/starred_entries.json", starredReq)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (c *Client) UnstarEntries(entryIDs []int64) error {
 		StarredEntries: entryIDs,
 	}
 	
-	req, err := c.NewRequest(http.MethodDelete, "/starred_entries.json", starredReq)
+	req, err := c.NewRequest(http.MethodDelete, "/v2/starred_entries.json", starredReq)
 	if err != nil {
 		return err
 	}

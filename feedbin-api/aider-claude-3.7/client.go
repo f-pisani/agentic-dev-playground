@@ -15,7 +15,7 @@ import (
 
 const (
 	// BaseURL is the base URL for the Feedbin API
-	BaseURL = "https://api.feedbin.com/v2"
+	BaseURL = "https://api.feedbin.com"
 	
 	// UserAgent is the user agent used for API requests
 	UserAgent = "Feedbin Go Client/1.0"
@@ -51,6 +51,11 @@ func NewClient(username, password string) *Client {
 
 // NewRequest creates an API request with authentication
 func (c *Client) NewRequest(method, path string, body interface{}) (*http.Request, error) {
+	// Make sure path starts with /
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	
 	rel, err := url.Parse(path)
 	if err != nil {
 		return nil, err

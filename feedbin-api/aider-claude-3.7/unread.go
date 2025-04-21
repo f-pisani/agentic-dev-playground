@@ -6,7 +6,7 @@ import (
 
 // GetUnreadEntries retrieves all unread entry IDs
 func (c *Client) GetUnreadEntries() ([]int64, error) {
-	req, err := c.NewRequest(http.MethodGet, "/unread_entries.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/unread_entries.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (c *Client) MarkEntriesAsUnread(entryIDs []int64) error {
 		UnreadEntries: entryIDs,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/unread_entries.json", unreadReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/unread_entries.json", unreadReq)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (c *Client) MarkEntriesAsRead(entryIDs []int64) error {
 		UnreadEntries: entryIDs,
 	}
 	
-	req, err := c.NewRequest(http.MethodDelete, "/unread_entries.json", unreadReq)
+	req, err := c.NewRequest(http.MethodDelete, "/v2/unread_entries.json", unreadReq)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 
 // GetImports retrieves all imports
 func (c *Client) GetImports() ([]Import, error) {
-	req, err := c.NewRequest(http.MethodGet, "/imports.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/imports.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (c *Client) GetImports() ([]Import, error) {
 
 // GetImport retrieves a specific import by ID
 func (c *Client) GetImport(id int64) (*Import, error) {
-	path := fmt.Sprintf("/imports/%d.json", id)
+	path := fmt.Sprintf("/v2/imports/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (c *Client) CreateImport(opml string) (*Import, error) {
 		OPML: opml,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/imports.json", importReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/imports.json", importReq)
 	if err != nil {
 		return nil, err
 	}

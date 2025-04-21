@@ -10,7 +10,7 @@ import (
 
 // GetEntries retrieves entries with optional parameters
 func (c *Client) GetEntries(params url.Values) ([]Entry, error) {
-	path := "/entries.json"
+	path := "/v2/entries.json"
 	if len(params) > 0 {
 		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
@@ -41,7 +41,7 @@ func (c *Client) GetEntries(params url.Values) ([]Entry, error) {
 
 // GetEntry retrieves a specific entry by ID
 func (c *Client) GetEntry(id int64) (*Entry, error) {
-	path := fmt.Sprintf("/entries/%d.json", id)
+	path := fmt.Sprintf("/v2/entries/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (c *Client) GetEntry(id int64) (*Entry, error) {
 
 // GetFeedEntries retrieves entries for a specific feed
 func (c *Client) GetFeedEntries(feedID int64, params url.Values) ([]Entry, error) {
-	path := fmt.Sprintf("/feeds/%d/entries.json", feedID)
+	path := fmt.Sprintf("/v2/feeds/%d/entries.json", feedID)
 	if len(params) > 0 {
 		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
@@ -121,7 +121,7 @@ func (c *Client) GetEntriesByIDs(ids []int64) ([]Entry, error) {
 
 // GetEntryCount returns the total number of entries
 func (c *Client) GetEntryCount() (int, error) {
-	req, err := c.NewRequest(http.MethodGet, "/entries.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/entries.json", nil)
 	if err != nil {
 		return 0, err
 	}
@@ -149,7 +149,7 @@ func (c *Client) GetPaginatedEntries(params url.Values, page int) ([]Entry, map[
 		params.Set("page", strconv.Itoa(page))
 	}
 	
-	path := fmt.Sprintf("/entries.json?%s", params.Encode())
+	path := fmt.Sprintf("/v2/entries.json?%s", params.Encode())
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err

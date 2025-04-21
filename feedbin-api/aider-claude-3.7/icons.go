@@ -7,7 +7,7 @@ import (
 
 // GetIcon retrieves a specific icon by ID
 func (c *Client) GetIcon(id int64) (*Favicon, error) {
-	path := fmt.Sprintf("/icons/%d.json", id)
+	path := fmt.Sprintf("/v2/icons/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err

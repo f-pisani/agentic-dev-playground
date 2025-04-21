@@ -7,7 +7,7 @@ import (
 
 // GetTags retrieves all tags
 func (c *Client) GetTags() ([]Tag, error) {
-	req, err := c.NewRequest(http.MethodGet, "/tags.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/tags.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (c *Client) GetTags() ([]Tag, error) {
 
 // DeleteTag deletes a tag and all associated taggings
 func (c *Client) DeleteTag(id int64) error {
-	path := fmt.Sprintf("/tags/%d.json", id)
+	path := fmt.Sprintf("/v2/tags/%d.json", id)
 	req, err := c.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return err

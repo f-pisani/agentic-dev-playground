@@ -8,7 +8,7 @@ import (
 
 // GetRecentlyReadEntries retrieves recently read entry IDs
 func (c *Client) GetRecentlyReadEntries() ([]int64, error) {
-	req, err := c.NewRequest(http.MethodGet, "/recently_read_entries.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/recently_read_entries.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (c *Client) GetRecentlyReadEntriesSince(since time.Time) ([]int64, error) {
 	params := url.Values{}
 	params.Set("since", FormatFeedbinTime(since))
 	
-	path := "/recently_read_entries.json?" + params.Encode()
+	path := "/v2/recently_read_entries.json?" + params.Encode()
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (c *Client) MarkEntriesAsRecentlyRead(entryIDs []int64) error {
 		RecentlyReadEntries: entryIDs,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/recently_read_entries.json", recentlyReadReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/recently_read_entries.json", recentlyReadReq)
 	if err != nil {
 		return err
 	}

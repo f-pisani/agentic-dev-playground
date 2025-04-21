@@ -8,7 +8,7 @@ import (
 
 // GetSubscriptions retrieves all subscriptions
 func (c *Client) GetSubscriptions() ([]Subscription, error) {
-	req, err := c.NewRequest(http.MethodGet, "/subscriptions.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/subscriptions.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (c *Client) GetSubscriptions() ([]Subscription, error) {
 
 // GetSubscription retrieves a specific subscription by ID
 func (c *Client) GetSubscription(id int64) (*Subscription, error) {
-	path := fmt.Sprintf("/subscriptions/%d.json", id)
+	path := fmt.Sprintf("/v2/subscriptions/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (c *Client) CreateSubscription(feedURL string) (*Subscription, error) {
 		FeedURL: feedURL,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/subscriptions.json", subscriptionReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/subscriptions.json", subscriptionReq)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *Client) CreateSubscription(feedURL string) (*Subscription, error) {
 
 // UpdateSubscription updates a subscription's title
 func (c *Client) UpdateSubscription(id int64, title string) (*Subscription, error) {
-	path := fmt.Sprintf("/subscriptions/%d.json", id)
+	path := fmt.Sprintf("/v2/subscriptions/%d.json", id)
 	updateReq := &SubscriptionUpdateRequest{
 		Title: title,
 	}
@@ -82,7 +82,7 @@ func (c *Client) UpdateSubscription(id int64, title string) (*Subscription, erro
 
 // DeleteSubscription deletes a subscription
 func (c *Client) DeleteSubscription(id int64) error {
-	path := fmt.Sprintf("/subscriptions/%d.json", id)
+	path := fmt.Sprintf("/v2/subscriptions/%d.json", id)
 	req, err := c.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (c *Client) DeleteSubscription(id int64) error {
 
 // GetFeedSubscriptions retrieves all subscriptions for a specific feed
 func (c *Client) GetFeedSubscriptions(feedID int64) ([]Subscription, error) {
-	path := fmt.Sprintf("/feeds/%d/subscriptions.json", feedID)
+	path := fmt.Sprintf("/v2/feeds/%d/subscriptions.json", feedID)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (c *Client) GetFeedSubscriptions(feedID int64) ([]Subscription, error) {
 
 // GetSubscriptionsWithParams retrieves subscriptions with optional parameters
 func (c *Client) GetSubscriptionsWithParams(params url.Values) ([]Subscription, error) {
-	path := "/subscriptions.json"
+	path := "/v2/subscriptions.json"
 	if len(params) > 0 {
 		path = fmt.Sprintf("%s?%s", path, params.Encode())
 	}
@@ -132,7 +132,7 @@ func (c *Client) GetSubscriptionsWithParams(params url.Values) ([]Subscription, 
 
 // GetSubscriptionCount returns the total number of subscriptions
 func (c *Client) GetSubscriptionCount() (int, error) {
-	req, err := c.NewRequest(http.MethodGet, "/subscriptions.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/subscriptions.json", nil)
 	if err != nil {
 		return 0, err
 	}

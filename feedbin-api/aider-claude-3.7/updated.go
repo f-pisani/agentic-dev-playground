@@ -8,7 +8,7 @@ import (
 
 // GetUpdatedEntries retrieves updated entry IDs
 func (c *Client) GetUpdatedEntries() ([]int64, error) {
-	req, err := c.NewRequest(http.MethodGet, "/updated_entries.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/updated_entries.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (c *Client) GetUpdatedEntriesSince(since time.Time) ([]int64, error) {
 	params := url.Values{}
 	params.Set("since", FormatFeedbinTime(since))
 	
-	path := "/updated_entries.json?" + params.Encode()
+	path := "/v2/updated_entries.json?" + params.Encode()
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err

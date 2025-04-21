@@ -7,7 +7,7 @@ import (
 
 // GetSavedSearches retrieves all saved searches
 func (c *Client) GetSavedSearches() ([]SavedSearch, error) {
-	req, err := c.NewRequest(http.MethodGet, "/saved_searches.json", nil)
+	req, err := c.NewRequest(http.MethodGet, "/v2/saved_searches.json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (c *Client) GetSavedSearches() ([]SavedSearch, error) {
 
 // GetSavedSearch retrieves a specific saved search by ID
 func (c *Client) GetSavedSearch(id int64) (*SavedSearch, error) {
-	path := fmt.Sprintf("/saved_searches/%d.json", id)
+	path := fmt.Sprintf("/v2/saved_searches/%d.json", id)
 	req, err := c.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (c *Client) CreateSavedSearch(name, query string) (*SavedSearch, error) {
 		Query: query,
 	}
 	
-	req, err := c.NewRequest(http.MethodPost, "/saved_searches.json", searchReq)
+	req, err := c.NewRequest(http.MethodPost, "/v2/saved_searches.json", searchReq)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *Client) CreateSavedSearch(name, query string) (*SavedSearch, error) {
 
 // UpdateSavedSearch updates a saved search
 func (c *Client) UpdateSavedSearch(id int64, name, query string) (*SavedSearch, error) {
-	path := fmt.Sprintf("/saved_searches/%d.json", id)
+	path := fmt.Sprintf("/v2/saved_searches/%d.json", id)
 	searchReq := &SavedSearchRequest{
 		Name:  name,
 		Query: query,
@@ -83,7 +83,7 @@ func (c *Client) UpdateSavedSearch(id int64, name, query string) (*SavedSearch, 
 
 // DeleteSavedSearch deletes a saved search
 func (c *Client) DeleteSavedSearch(id int64) error {
-	path := fmt.Sprintf("/saved_searches/%d.json", id)
+	path := fmt.Sprintf("/v2/saved_searches/%d.json", id)
 	req, err := c.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return err
