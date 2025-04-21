@@ -1,4 +1,4 @@
-# ai-editor-vibing
+# agentic-dev-playground
 
 A collection of experiments exploring agentic AI tools for developers. This repository contains test projects and notes related to AI-powered development environments.
 
