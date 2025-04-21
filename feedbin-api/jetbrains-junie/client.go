@@ -43,6 +43,14 @@ type Client struct {
 	Entries       *EntryService
 	Unread        *UnreadService
 	Starred       *StarredService
+	Taggings      *TaggingService
+	Tags          *TagService
+	SavedSearches *SavedSearchService
+	RecentlyRead  *RecentlyReadService
+	Updated       *UpdatedService
+	Icons         *IconService
+	Imports       *ImportService
+	Pages         *PageService
 }
 
 // NewClient creates a new Feedbin API client with the given credentials.
@@ -59,6 +67,14 @@ func NewClient(username, password string) *Client {
 	c.Entries = &EntryService{client: c}
 	c.Unread = &UnreadService{client: c}
 	c.Starred = &StarredService{client: c}
+	c.Taggings = &TaggingService{client: c}
+	c.Tags = &TagService{client: c}
+	c.SavedSearches = &SavedSearchService{client: c}
+	c.RecentlyRead = &RecentlyReadService{client: c}
+	c.Updated = &UpdatedService{client: c}
+	c.Icons = &IconService{client: c}
+	c.Imports = &ImportService{client: c}
+	c.Pages = &PageService{client: c}
 
 	return c
 }
