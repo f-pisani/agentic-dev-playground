@@ -74,7 +74,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("User-Agent", UserAgent)
-	req.Header.Set("Accept", "application/json; charset=utf-8")
+	req.Header.Set("Accept", "application/json")
 	
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
@@ -85,12 +85,18 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 
 // Do sends an API request and returns the API response
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+	// Print request details for debugging
+	fmt.Printf("Making request to: %s %s\n", req.Method, req.URL.String())
+	
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	
 	defer resp.Body.Close()
+	
+	// Print response status for debugging
+	fmt.Printf("Response status: %s\n", resp.Status)
 	
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		// Read error details if available
@@ -106,8 +112,16 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 	
 	if v != nil && resp.StatusCode != http.StatusNoContent {
-		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
-			return resp, fmt.Errorf("JSON decode error: %v", err)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		
+		// Print response body for debugging
+		fmt.Printf("Response body: %s\n", string(bodyBytes))
+		
+		// Create a new reader from the bytes for JSON decoding
+		bodyReader := bytes.NewReader(bodyBytes)
+		
+		if err := json.NewDecoder(bodyReader).Decode(v); err != nil {
+			return resp, fmt.Errorf("JSON decode error: %v - Body: %s", err, string(bodyBytes))
 		}
 	}
 	

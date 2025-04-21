@@ -22,8 +22,27 @@ func main() {
 	// Create a new client
 	client := feedbin.NewClient(username, password)
 	
+	// Test the connection with a simple endpoint first
+	fmt.Println("Testing API connection...")
+	
+	// Try to get tags first as a simple test
+	fmt.Println("\nGetting tags...")
+	tags, err := client.GetTags()
+	if err != nil {
+		log.Fatalf("Error getting tags: %v", err)
+	}
+	
+	fmt.Printf("Found %d tags\n", len(tags))
+	for i, tag := range tags {
+		if i >= 5 {
+			fmt.Println("...")
+			break
+		}
+		fmt.Printf("  - %s (ID: %d)\n", tag.Name, tag.ID)
+	}
+	
 	// Get all subscriptions
-	fmt.Println("Getting subscriptions...")
+	fmt.Println("\nGetting subscriptions...")
 	subscriptions, err := client.GetSubscriptions()
 	if err != nil {
 		log.Fatalf("Error getting subscriptions: %v", err)
@@ -55,22 +74,6 @@ func main() {
 	}
 	
 	fmt.Printf("Found %d starred entries\n", len(starredIDs))
-	
-	// Get tags
-	fmt.Println("\nGetting tags...")
-	tags, err := client.GetTags()
-	if err != nil {
-		log.Fatalf("Error getting tags: %v", err)
-	}
-	
-	fmt.Printf("Found %d tags\n", len(tags))
-	for i, tag := range tags {
-		if i >= 5 {
-			fmt.Println("...")
-			break
-		}
-		fmt.Printf("  - %s (ID: %d)\n", tag.Name, tag.ID)
-	}
 	
 	fmt.Println("\nFeedbin API client example completed successfully!")
 }
