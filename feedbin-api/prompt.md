@@ -4,7 +4,7 @@ The client should be implemented as a Go package and written to the following pa
 
 Requirements:
 - Read and parse the API documentation from the markdown files in the specs/ directory.
-- Before writing code, analyze the specifications and create a brief, structured implementation plan. 
+- Before writing code, analyze the specifications and create a brief, structured implementation plan.
 - Write this plan in a README.md file at the root of the output package.
 - Implement a Go package to interact with the API described in the specs.
 
