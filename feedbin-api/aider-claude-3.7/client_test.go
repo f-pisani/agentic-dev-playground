@@ -104,7 +104,7 @@ func TestGetPaginationLinks(t *testing.T) {
 		Header: http.Header{},
 	}
 	
-	resp.Header.Set("Links", `<https://api.feedbin.com/v2/entries.json?page=2>; rel="next", <https://api.feedbin.com/v2/entries.json?page=5>; rel="last"`)
+	resp.Header.Set("Link", `<https://api.feedbin.com/v2/entries.json?page=2>; rel="next", <https://api.feedbin.com/v2/entries.json?page=5>; rel="last"`)
 	
 	links := GetPaginationLinks(resp)
 	
