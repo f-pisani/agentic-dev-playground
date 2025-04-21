@@ -93,8 +93,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	defer resp.Body.Close()
 	
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		// Try to read error details if available
-		var errorResponse ErrorResponse
+		// Read error details if available
 		body, _ := io.ReadAll(resp.Body)
 		
 		// Log the response body for debugging
