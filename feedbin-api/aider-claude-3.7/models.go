@@ -118,7 +118,7 @@ type RecentlyReadEntry struct {
 
 // RecentlyReadEntryRequest represents a request to mark entries as recently read
 type RecentlyReadEntryRequest struct {
-	EntryIDs []int64 `json:"recently_read_entries"`
+	RecentlyReadEntries []int64 `json:"recently_read_entries"`
 }
 
 // UpdatedEntry represents an updated entry

@@ -21,7 +21,7 @@ func (c *Client) GetEntries(params url.Values) ([]Entry, error) {
 	}
 	
 	var entries []Entry
-	resp, err := c.Do(req, &entries)
+	_, err = c.Do(req, &entries)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *Client) GetFeedEntries(feedID int64, params url.Values) ([]Entry, error
 	}
 	
 	var entries []Entry
-	resp, err := c.Do(req, &entries)
+	_, err = c.Do(req, &entries)
 	if err != nil {
 		return nil, err
 	}

@@ -108,7 +108,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 func GetPaginationLinks(resp *http.Response) map[string]string {
 	links := make(map[string]string)
 	
-	if linkHeader := resp.Header.Get("Links"); linkHeader != "" {
+	if linkHeader := resp.Header.Get("Link"); linkHeader != "" {
 		for _, link := range strings.Split(linkHeader, ",") {
 			segments := strings.Split(strings.TrimSpace(link), ";")
 			if len(segments) < 2 {

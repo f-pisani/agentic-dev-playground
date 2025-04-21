@@ -50,7 +50,7 @@ func (c *Client) MarkEntriesAsRecentlyRead(entryIDs []int64) error {
 	}
 	
 	recentlyReadReq := &RecentlyReadEntryRequest{
-		EntryIDs: entryIDs,
+		RecentlyReadEntries: entryIDs,
 	}
 	
 	req, err := c.NewRequest(http.MethodPost, "/recently_read_entries.json", recentlyReadReq)
