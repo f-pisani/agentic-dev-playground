@@ -4,24 +4,24 @@ import "time"
 
 // Entry represents a single feed entry.
 type Entry struct {
-	ID                  int64             `json:"id"`
-	FeedID              int64             `json:"feed_id"`
-	Title               *string           `json:"title"`
-	URL                 *string           `json:"url"`
-	ExtractedContentURL *string           `json:"extracted_content_url,omitempty"`
-	Author              *string           `json:"author"`
-	Content             *string           `json:"content"` // HTML content
-	Summary             *string           `json:"summary"`
-	Published           time.Time         `json:"published"`
-	CreatedAt           time.Time         `json:"created_at"`
-	Original            *OriginalEntry    `json:"original,omitempty"`         // Included with include_original=true
-	Images              *EntryImages      `json:"images,omitempty"`           // Extended mode
-	Enclosure           *EntryEnclosure   `json:"enclosure,omitempty"`        // Extended mode or include_enclosure=true
-	TwitterID           *int64            `json:"twitter_id,omitempty"`       // Extended mode
-	TwitterThreadIDs    []int64           `json:"twitter_thread_ids,omitempty"` // Extended mode
+	ID                  int64              `json:"id"`
+	FeedID              int64              `json:"feed_id"`
+	Title               *string            `json:"title"`
+	URL                 *string            `json:"url"`
+	ExtractedContentURL *string            `json:"extracted_content_url,omitempty"`
+	Author              *string            `json:"author"`
+	Content             *string            `json:"content"` // HTML content
+	Summary             *string            `json:"summary"`
+	Published           time.Time          `json:"published"`
+	CreatedAt           time.Time          `json:"created_at"`
+	Original            *OriginalEntry     `json:"original,omitempty"`           // Included with include_original=true
+	Images              *EntryImages       `json:"images,omitempty"`             // Extended mode
+	Enclosure           *EntryEnclosure    `json:"enclosure,omitempty"`          // Extended mode or include_enclosure=true
+	TwitterID           *int64             `json:"twitter_id,omitempty"`         // Extended mode
+	TwitterThreadIDs    []int64            `json:"twitter_thread_ids,omitempty"` // Extended mode
 	ExtractedArticles   []ExtractedArticle `json:"extracted_articles,omitempty"` // Extended mode
-	JSONFeed            *JSONFeedData     `json:"json_feed,omitempty"`        // Extended mode
-	ContentDiff         *string           `json:"content_diff,omitempty"`     // Included with include_content_diff=true
+	JSONFeed            *JSONFeedData      `json:"json_feed,omitempty"`          // Extended mode
+	ContentDiff         *string            `json:"content_diff,omitempty"`       // Included with include_content_diff=true
 }
 
 // OriginalEntry represents the original version of an entry if it has been updated.
@@ -70,11 +70,11 @@ type ExtractedArticle struct {
 // JSONFeedData holds additional metadata if the entry is from a JSON Feed.
 // This structure might be shared between Entry and Subscription.
 type JSONFeedData struct {
-	Version     *string `json:"version,omitempty"`
-	UserComment *string `json:"user_comment,omitempty"`
-	NextURL     *string `json:"next_url,omitempty"`
-	Icon        *string `json:"icon,omitempty"`
-	Favicon     *string `json:"favicon,omitempty"`
+	Version     *string   `json:"version,omitempty"`
+	UserComment *string   `json:"user_comment,omitempty"`
+	NextURL     *string   `json:"next_url,omitempty"`
+	Icon        *string   `json:"icon,omitempty"`
+	Favicon     *string   `json:"favicon,omitempty"`
 	Author      *struct { // JSONFeed author object
 		Name   *string `json:"name,omitempty"`
 		URL    *string `json:"url,omitempty"`
@@ -86,9 +86,9 @@ type JSONFeedData struct {
 		URL  *string `json:"url,omitempty"`
 	} `json:"hubs,omitempty"`
 	// Fields specific to Entry's JSONFeed data (if any)
-	FeedURL     *string `json:"feed_url,omitempty"` // Present in Subscription's JSONFeed
+	FeedURL     *string `json:"feed_url,omitempty"`      // Present in Subscription's JSONFeed
 	HomePageURL *string `json:"home_page_url,omitempty"` // Present in Subscription's JSONFeed
-	Title       *string `json:"title,omitempty"`       // Present in Subscription's JSONFeed
+	Title       *string `json:"title,omitempty"`         // Present in Subscription's JSONFeed
 }
 
 // Feed represents a single feed.
@@ -104,9 +104,9 @@ type Subscription struct {
 	ID        int64         `json:"id"`
 	CreatedAt time.Time     `json:"created_at"`
 	FeedID    int64         `json:"feed_id"`
-	Title     string        `json:"title"` // Docs show this as required
-	FeedURL   string        `json:"feed_url"` // Docs show this as required
-	SiteURL   string        `json:"site_url"` // Docs show this as required
+	Title     string        `json:"title"`               // Docs show this as required
+	FeedURL   string        `json:"feed_url"`            // Docs show this as required
+	SiteURL   string        `json:"site_url"`            // Docs show this as required
 	JSONFeed  *JSONFeedData `json:"json_feed,omitempty"` // Extended mode
 }
 
@@ -215,22 +215,27 @@ type UpdateSavedSearchRequest struct {
 
 // ListEntriesParams holds parameters for listing entries.
 type ListEntriesParams struct {
-	Page                *int    `url:"page,omitempty"`
-	Since               *string `url:"since,omitempty"` // ISO 8601 date
-	IDs                 []int64 `url:"ids,omitempty,comma"`
-	Read                *bool   `url:"read,omitempty"`
-	Starred             *bool   `url:"starred,omitempty"`
-	PerPage             *int    `url:"per_page,omitempty"`
-	Mode                *string `url:"mode,omitempty"` // "extended"
-	IncludeOriginal     *bool   `url:"include_original,omitempty"`
-	IncludeEnclosure    *bool   `url:"include_enclosure,omitempty"`
-	IncludeContentDiff  *bool   `url:"include_content_diff,omitempty"`
+	Page               *int    `url:"page,omitempty"`
+	Since              *string `url:"since,omitempty"` // ISO 8601 date
+	IDs                []int64 `url:"ids,omitempty,comma"`
+	Read               *bool   `url:"read,omitempty"`
+	Starred            *bool   `url:"starred,omitempty"`
+	PerPage            *int    `url:"per_page,omitempty"`
+	Mode               *string `url:"mode,omitempty"` // "extended"
+	IncludeOriginal    *bool   `url:"include_original,omitempty"`
+	IncludeEnclosure   *bool   `url:"include_enclosure,omitempty"`
+	IncludeContentDiff *bool   `url:"include_content_diff,omitempty"`
 }
 
 // ListSubscriptionsParams holds parameters for listing subscriptions.
 type ListSubscriptionsParams struct {
 	Since *string `url:"since,omitempty"` // ISO 8601 date
 	Mode  *string `url:"mode,omitempty"`  // "extended"
+}
+
+// GetSubscriptionParams holds parameters for getting a single subscription.
+type GetSubscriptionParams struct {
+	Mode *string `url:"mode,omitempty"` // "extended"
 }
 
 // GetSavedSearchParams holds parameters for getting a saved search's entries.
@@ -247,10 +252,10 @@ type ListUpdatedEntryIDsParams struct {
 // GetEntryParams holds parameters for getting a single entry.
 // Similar to ListEntriesParams but contextually for a single entry.
 type GetEntryParams struct {
-	Mode                *string `url:"mode,omitempty"` // "extended"
-	IncludeOriginal     *bool   `url:"include_original,omitempty"`
-	IncludeEnclosure    *bool   `url:"include_enclosure,omitempty"`
-	IncludeContentDiff  *bool   `url:"include_content_diff,omitempty"`
+	Mode               *string `url:"mode,omitempty"` // "extended"
+	IncludeOriginal    *bool   `url:"include_original,omitempty"`
+	IncludeEnclosure   *bool   `url:"include_enclosure,omitempty"`
+	IncludeContentDiff *bool   `url:"include_content_diff,omitempty"`
 }
 
 // MultipleFeedChoice represents one choice when feed discovery yields multiple feeds.
@@ -272,20 +277,19 @@ type MultipleFeedChoice struct {
 // PresignedS3Upload represents the response from POST /v2/presigned_s3_uploads.json
 // This is used for OPML import.
 type PresignedS3Upload struct {
-	URL    string            `json:"url"`              // The URL to PUT the file to
-	Fields map[string]string `json:"fields"`           // Form fields to include in the PUT request
-	Path   string            `json:"path"`             // The path of the file on S3 (used to create import)
-	Method string            `json:"method"`           // Should be "put"
-	ACL    string            `json:"acl"`              // e.g., "private"
-	Key    string            `json:"key"`              // The key (filename) on S3
-	AWSAccessKeyID string    `json:"AWSAccessKeyId"` // Note the casing
-	Policy string            `json:"Policy"`
-	Signature string         `json:"Signature"`
-	ContentType string       `json:"Content-Type"`
+	URL            string            `json:"url"`            // The URL to PUT the file to
+	Fields         map[string]string `json:"fields"`         // Form fields to include in the PUT request
+	Path           string            `json:"path"`           // The path of the file on S3 (used to create import)
+	Method         string            `json:"method"`         // Should be "put"
+	ACL            string            `json:"acl"`            // e.g., "private"
+	Key            string            `json:"key"`            // The key (filename) on S3
+	AWSAccessKeyID string            `json:"AWSAccessKeyId"` // Note the casing
+	Policy         string            `json:"Policy"`
+	Signature      string            `json:"Signature"`
+	ContentType    string            `json:"Content-Type"`
 }
 
 // CreateImportRequest is used to create an import after uploading an OPML file.
 type CreateImportRequest struct {
 	Path string `json:"path"` // The 'path' from the PresignedS3Upload response
 }
-```

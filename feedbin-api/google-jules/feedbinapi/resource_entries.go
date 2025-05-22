@@ -16,7 +16,7 @@ type EntriesService struct {
 // Docs: https://github.com/feedbin/feedbin-api/blob/master/specs/content/entries.md#get-v2entriesjson
 func (s *EntriesService) ListEntries(ctx context.Context, params *ListEntriesParams) ([]Entry, *Response, error) {
 	path := "entries.json"
-	
+
 	queryParams, err := structToURLValues(params)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to convert params to query values for ListEntries: %w", err)

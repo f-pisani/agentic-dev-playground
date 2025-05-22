@@ -47,7 +47,6 @@ func newAPIError(resp *http.Response, body []byte) *APIError {
 	//    message = strings.Join(errResp.Errors, ", ")
 	// }
 
-
 	return &APIError{
 		Response: resp,
 		Message:  message,
@@ -61,29 +60,36 @@ func newAPIError(resp *http.Response, body []byte) *APIError {
 
 // ErrBadRequest indicates a 400 Bad Request error.
 type ErrBadRequest struct{ *APIError }
+
 func (e ErrBadRequest) Error() string { return e.APIError.Error() }
 
 // ErrUnauthorized indicates a 401 Unauthorized error.
 type ErrUnauthorized struct{ *APIError }
+
 func (e ErrUnauthorized) Error() string { return e.APIError.Error() }
 
 // ErrForbidden indicates a 403 Forbidden error.
 type ErrForbidden struct{ *APIError }
+
 func (e ErrForbidden) Error() string { return e.APIError.Error() }
 
 // ErrNotFound indicates a 404 Not Found error.
 type ErrNotFound struct{ *APIError }
+
 func (e ErrNotFound) Error() string { return e.APIError.Error() }
 
 // ErrUnsupportedMedia indicates a 415 Unsupported Media Type error.
 type ErrUnsupportedMedia struct{ *APIError }
+
 func (e ErrUnsupportedMedia) Error() string { return e.APIError.Error() }
 
 // ErrInternalServerError indicates a 500 Internal Server Error.
 type ErrInternalServerError struct{ *APIError }
+
 func (e ErrInternalServerError) Error() string { return e.APIError.Error() }
 
 // Specific error creation helpers (optional, could be used in `do` method)
-func newErrBadRequest(apiErr *APIError) error { return ErrBadRequest{apiErr} }
+func newErrBadRequest(apiErr *APIError) error   { return ErrBadRequest{apiErr} }
 func newErrUnauthorized(apiErr *APIError) error { return ErrUnauthorized{apiErr} }
+
 // ... and so on for other specific errors if needed for type assertion by callers.

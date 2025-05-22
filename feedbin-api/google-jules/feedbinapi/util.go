@@ -68,7 +68,7 @@ func structToURLValues(s interface{}) (url.Values, error) {
 		if omitempty && field.IsZero() && field.Kind() != reflect.Bool { // Bool zero value (false) can be significant
 			continue
 		}
-		
+
 		// Handle time.Time specifically for ISO 8601 formatting
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			if t, ok := field.Interface().(time.Time); ok {
@@ -79,7 +79,6 @@ func structToURLValues(s interface{}) (url.Values, error) {
 				continue
 			}
 		}
-
 
 		switch field.Kind() {
 		case reflect.String:
@@ -105,8 +104,8 @@ func structToURLValues(s interface{}) (url.Values, error) {
 				if len(strVals) > 0 {
 					values.Add(paramName, strings.Join(strVals, ","))
 				} else if !omitempty {
-                     values.Add(paramName, "") // Add empty if not omitempty and slice is empty
-                }
+					values.Add(paramName, "") // Add empty if not omitempty and slice is empty
+				}
 			} else {
 				// For slices not comma separated, add multiple values with the same paramName
 				for j := 0; j < field.Len(); j++ {
