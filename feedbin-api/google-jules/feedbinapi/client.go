@@ -25,9 +25,19 @@ type Client struct {
 
 	// Services used for talking to different parts of the Feedbin API.
 	// These will be initialized later.
-	Entries *EntriesService
-	Feeds *FeedsService
-	// Subscriptions *SubscriptionsService
+	Entries             *EntriesService
+	Feeds               *FeedsService
+	Subscriptions       *SubscriptionsService
+	Taggings            *TaggingsService
+	Tags                *TagsService
+	StarredEntries      *StarredEntriesService
+	UnreadEntries       *UnreadEntriesService
+	RecentlyReadEntries *RecentlyReadEntriesService
+	UpdatedEntries      *UpdatedEntriesService
+	SavedSearches       *SavedSearchesService
+	Imports             *ImportsService
+	Icons               *IconsService
+	Pages               *PagesService
 	// ... and so on for all resources
 }
 
@@ -59,6 +69,17 @@ func NewClient(username, password string, opts ...ClientOption) (*Client, error)
 	// Initialize services here later
 	c.Entries = &EntriesService{client: c}
 	c.Feeds = &FeedsService{client: c}
+	c.Subscriptions = &SubscriptionsService{client: c}
+	c.Taggings = &TaggingsService{client: c}
+	c.Tags = &TagsService{client: c}
+	c.StarredEntries = &StarredEntriesService{client: c}
+	c.UnreadEntries = &UnreadEntriesService{client: c}
+	c.RecentlyReadEntries = &RecentlyReadEntriesService{client: c}
+	c.UpdatedEntries = &UpdatedEntriesService{client: c}
+	c.SavedSearches = &SavedSearchesService{client: c}
+	c.Imports = &ImportsService{client: c}
+	c.Icons = &IconsService{client: c}
+	c.Pages = &PagesService{client: c}
 	// ...
 
 	return c, nil
@@ -205,10 +226,10 @@ func addQueryParams(baseURL string, params map[string]string) (string, error) {
 
 // Helper function to handle PATCH alternative via POST
 func (c *Client) patchViaPOST(ctx context.Context, urlStr string, body interface{}, v interface{}) (*Response, error) {
-    // Ensure the URL ends with /update.json or similar, or append if necessary
-    if !strings.HasSuffix(urlStr, "/update.json") { // This check might need to be more robust
-        urlStr += "/update.json" // Or handle this based on specific endpoint needs
-    }
+	// Ensure the URL ends with /update.json or similar, or append if necessary
+	if !strings.HasSuffix(urlStr, "/update.json") { // This check might need to be more robust
+		urlStr += "/update.json" // Or handle this based on specific endpoint needs
+	}
 	req, err := c.newRequest(ctx, http.MethodPost, urlStr, nil, body)
 	if err != nil {
 		return nil, err
