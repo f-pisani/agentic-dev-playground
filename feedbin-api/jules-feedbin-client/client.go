@@ -40,7 +40,7 @@ type Client struct {
 	Icons                  *IconsService
 	Imports                *ImportsService
 	Pages                  *PagesService
-	// ... other services will be added here (e.g. Extract)
+	Extract                *ExtractService // For Full Content Extraction
 }
 
 // NewClient returns a new Feedbin API client
@@ -72,7 +72,8 @@ func (c *Client) initServices() {
 	c.Icons = NewIconsService(c)
 	c.Imports = NewImportsService(c)
 	c.Pages = NewPagesService(c)
-	// ... initialize other services
+	// For ExtractService, the apiToken is the username.
+	c.Extract = NewExtractService(c.client, c.username, c.UserAgent)
 }
 
 // SetBaseURL sets the base URL for API requests to a custom endpoint.
