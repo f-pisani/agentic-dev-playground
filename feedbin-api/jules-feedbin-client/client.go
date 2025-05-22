@@ -31,7 +31,16 @@ type Client struct {
 	Subscriptions  *SubscriptionsService
 	Entries        *EntriesService
 	UnreadEntries  *UnreadEntriesService
-	// ... other services will be added here
+	StarredEntries      *StarredEntriesService
+	Taggings            *TaggingsService
+	Tags                *TagsService
+	SavedSearches       *SavedSearchesService
+	RecentlyReadEntries *RecentlyReadEntriesService
+	UpdatedEntries         *UpdatedEntriesService
+	Icons                  *IconsService
+	Imports                *ImportsService
+	Pages                  *PagesService
+	// ... other services will be added here (e.g. Extract)
 }
 
 // NewClient returns a new Feedbin API client
@@ -54,6 +63,15 @@ func (c *Client) initServices() {
 	c.Subscriptions = NewSubscriptionsService(c)
 	c.Entries = NewEntriesService(c)
 	c.UnreadEntries = NewUnreadEntriesService(c)
+	c.StarredEntries = NewStarredEntriesService(c)
+	c.Taggings = NewTaggingsService(c)
+	c.Tags = NewTagsService(c)
+	c.SavedSearches = NewSavedSearchesService(c)
+	c.RecentlyReadEntries = NewRecentlyReadEntriesService(c)
+	c.UpdatedEntries = NewUpdatedEntriesService(c)
+	c.Icons = NewIconsService(c)
+	c.Imports = NewImportsService(c)
+	c.Pages = NewPagesService(c)
 	// ... initialize other services
 }
 
