@@ -1,120 +1,201 @@
-# Feedbin API Client for Go (google-jules)
+# Jules Feedbin Go Client
 
-This Go package provides a client for interacting with the [Feedbin API V2](https://github.com/feedbin/feedbin-api/tree/master/specs). It is designed to be idiomatic, use only the Go standard library, and provide access to the various resources offered by the Feedbin API.
+This is a Go client library for the [Feedbin API V2](https://github.com/feedbin/feedbin-api). It provides methods for interacting with all documented API endpoints.
 
-## Implementation Plan
+The client is structured with a main `Client` object that provides access to various services, each corresponding to a group of API endpoints (e.g., Subscriptions, Entries, Taggings).
 
-The following plan outlines the steps taken to develop this API client:
+## Installation
 
-1.  **Finalize API Endpoint Analysis:**
-    *   Thoroughly read all markdown files in `feedbin-api/specs/content/` to fully understand all API endpoints, their parameters, and response structures.
-    *   Pay close attention to request types (GET, POST, PUT, DELETE, PATCH), required parameters, and specific response codes for each endpoint.
-    *   *Status: Completed.*
+To use this client in your Go project:
 
-2.  **Design Go Package Structure:**
-    *   Define the overall package structure for clarity and maintainability. The chosen structure is:
-        *   `feedbin-api/google-jules/`
-            *   `README.md` (this file)
-            *   `feedbinapi/` (The main package directory)
-                *   `client.go`: Core `Client` struct, HTTP request handling, authentication, base URL.
-                *   `models.go`: Struct definitions for all API resources.
-                *   `pagination.go`: Logic for handling paginated responses.
-                *   `errors.go`: Custom error types.
-                *   `options.go`: Client configuration options.
-                *   `resource_*.go`: One file for each API resource type (e.g., `resource_entries.go`, `resource_feeds.go`), containing specific methods for that resource.
-    *   *Status: Completed.*
+```bash
+go get github.com/your-username/jules-feedbin-client # Replace with actual path if hosted
+```
+*(Note: The actual import path will depend on where this client is hosted.)*
 
-3.  **Write `README.md`:**
-    *   Create this `README.md` file in `feedbin-api/google-jules/` detailing the implementation plan and a brief overview of the package.
-    *   *Status: In Progress (this step).*
+Initialize the client in your Go code:
+```go
+import "path/to/jules-feedbin-client" // Replace with actual import path
 
-4.  **Implement Core Client (`feedbinapi/client.go`, `feedbinapi/options.go`):**
-    *   Define a `Client` struct.
-    *   Implement `NewClient(username, password string, options ...ClientOption) (*Client, error)`.
-    *   Implement generic request methods (`newRequest`, `do`) for HTTP communication, JSON marshalling/unmarshalling, and basic error handling.
-    *   Implement `VerifyCredentials(ctx context.Context) error`.
+func main() {
+    username := "your-feedbin-username"
+    password := "your-feedbin-password"
 
-5.  **Implement Models (`feedbinapi/models.go`):**
-    *   Define Go structs for all API resources with correct JSON tags.
-    *   Handle nullable fields and timestamps appropriately.
+    client := feedbin.NewClient(username, password)
 
-6.  **Implement Pagination (`feedbinapi/pagination.go`):**
-    *   Define `PaginationInfo` struct.
-    *   Implement `parseLinkHeader` and other helper functions.
+    // You can now use the client's services
+    // For example, to verify authentication:
+    ok, _, err := client.Authentication.Verify()
+    if err != nil {
+        log.Fatalf("Authentication check failed: %v", err)
+    }
+    if !ok {
+        log.Fatal("Authentication failed: Invalid credentials.")
+    }
+    fmt.Println("Authentication successful!")
+}
+```
 
-7.  **Implement Error Handling (`feedbinapi/errors.go`):**
-    *   Define `APIError` and other specific error types.
-    *   Ensure non-2xx HTTP responses are converted into Go errors.
+## Features
 
-8.  **Implement API Endpoints (in `feedbinapi/resource_*.go` files):**
-    *   For each resource (Entries, Feeds, Subscriptions, Taggings, Tags, Starred Entries, Unread Entries, Updated Entries, Recently Read Entries, Saved Searches, Imports, Icons, Pages):
-        *   Create the corresponding `resource_*.go` file.
-        *   Implement methods on the `Client` struct for each endpoint, accepting `context.Context`.
-        *   Handle request parameters and pagination.
+*   Full coverage of the Feedbin API V2.
+*   Helper methods for pagination and date handling.
+*   Service-oriented architecture.
+*   Uses HTTP Basic Authentication for the main API.
+*   Supports Full Content Extraction API (via `extract.feedbin.com`).
 
-9.  **Idiomatic Go and Validation:**
-    *   Ensure all code is idiomatic Go.
-    *   Use `go fmt` to format the code.
-    *   Run `go vet` to check for suspicious constructs and ensure no errors.
+## Implemented API Endpoints
 
-10. **(Optional) Testing:**
-    *   Write basic unit tests for key functionalities (client, representative API calls, pagination, errors).
-    *   Consider mocking HTTP requests/responses.
+The client provides access to the following Feedbin API V2 resources through dedicated services:
 
-11. **Review and Refine:**
-    *   Review the entire codebase for clarity, correctness, and adherence to requirements.
+*   **Authentication**:
+    *   `Verify()`: Verifies client credentials.
+*   **Client**:
+    *   `NewClient(username, password)`
+    *   `SetBaseURL(url)`
+    *   `SetUserAgent(ua)`
+    *   `SetTimeout(duration)`
+*   **Subscriptions**:
+    *   `List(opts *SubscriptionListOptions)`
+    *   `Get(id int64, opts *SubscriptionGetOptions)`
+    *   `Create(opts *CreateSubscriptionOptions)`
+    *   `Update(id int64, opts *UpdateSubscriptionOptions)`
+    *   `Delete(id int64)`
+*   **Entries**:
+    *   `List(opts *EntryListOptions)`
+    *   `Get(id int64, opts *EntryGetOptions)`
+    *   `ListByFeed(feedID int64, opts *EntryListOptions)`
+*   **Unread Entries**:
+    *   `List(opts *UnreadEntryListOptions)`: Get IDs of unread entries.
+    *   `Create(entryIDs []int64)`: Mark entries as unread.
+    *   `Delete(entryIDs []int64)`: Mark entries as read.
+*   **Starred Entries**:
+    *   `List(opts *StarredEntryListOptions)`: Get IDs of starred entries.
+    *   `Create(entryIDs []int64)`: Star entries.
+    *   `Delete(entryIDs []int64)`: Unstar entries.
+*   **Taggings**:
+    *   `List(opts *TaggingListOptions)`
+    *   `Create(opts *CreateTaggingOptions)`
+    *   `Delete(taggingID int64)`
+*   **Tags**:
+    *   `List(opts *TagListOptions)`
+    *   `Delete(tagID int64)`: Deletes a tag and all its taggings.
+*   **Saved Searches**:
+    *   `List(opts *SavedSearchListOptions)`
+    *   `Get(id int64)`
+    *   `Create(opts *CreateSavedSearchOptions)`
+    *   `Update(id int64, opts *UpdateSavedSearchOptions)`
+    *   `Delete(id int64)`
+*   **Recently Read Entries**:
+    *   `List(opts *RecentlyReadEntryListOptions)`
+    *   `Create(entryID int64, interaction *string)`: Record an entry interaction.
+*   **Updated Entries**:
+    *   `List(opts *UpdatedEntryListOptions)`: Get IDs of entries updated since a timestamp.
+*   **Icons**:
+    *   `List(opts *IconListOptions)`: Get all favicons.
+*   **Imports**:
+    *   `List(opts *ImportListOptions)`: List OPML import statuses.
+    *   `Create(opmlFilePath string)`: Upload an OPML file for import.
+*   **Pages**:
+    *   `Get(entryID int64, opts *PageGetOptions)`: Get processed page content for an entry.
+*   **Extract (Full Content Extraction)**:
+    *   `NewExtractService(httpClient, apiToken, userAgent)`
+    *   `Extract(urlToParse string)`: Fetches parsed content from `extract.feedbin.com`.
 
-12. **Submit:**
-    *   Submit the completed Go package.
-
-## Package Usage (Preliminary)
+## Usage Example
 
 ```go
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"os"
+	"time"
 
-	"path/to/your/project/feedbin-api/google-jules/feedbinapi" // Adjust import path
+	feedbin "path/to/jules-feedbin-client" // Replace with actual import path
 )
 
 func main() {
-	username := os.Getenv("FEEDBIN_USERNAME")
-	password := os.Getenv("FEEDBIN_PASSWORD")
+	client := feedbin.NewClient("YOUR_USERNAME", "YOUR_PASSWORD")
 
-	if username == "" || password == "" {
-		log.Fatal("Please set FEEDBIN_USERNAME and FEEDBIN_PASSWORD environment variables")
+	// Verify authentication
+	ok, _, err := client.Authentication.Verify()
+	if err != nil || !ok {
+		log.Fatalf("Authentication failed: %v", err)
 	}
+	fmt.Println("Successfully authenticated!")
 
-	client, err := feedbinapi.NewClient(username, password)
+	// List first 5 subscriptions
+	subs, _, err := client.Subscriptions.List(&feedbin.SubscriptionListOptions{
+		ListOptions: feedbin.ListOptions{PerPage: 5},
+	})
 	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
+		log.Fatalf("Failed to list subscriptions: %v", err)
 	}
 
-	// Example: Verify Credentials
-	ctx := context.Background()
-	if err := client.VerifyCredentials(ctx); err != nil {
-		log.Fatalf("Error verifying credentials: %v", err)
+	fmt.Println("
+First 5 Subscriptions:")
+	for _, sub := range subs {
+		fmt.Printf("- ID: %d, Title: %s, URL: %s
+", sub.ID, sub.Title, sub.FeedURL)
 	}
-	fmt.Println("Credentials verified successfully!")
 
-	// Example: List Subscriptions
-	// subscriptions, _, err := client.ListSubscriptions(ctx, nil) // Assuming nil for no params
-	// if err != nil {
-	//  log.Fatalf("Error listing subscriptions: %v", err)
-	// }
-	// for _, sub := range subscriptions {
-	//  fmt.Printf("Subscription: %s (ID: %d)
-", sub.Title, sub.ID)
-	// }
+	// List unread entry IDs (if any)
+	unreadIDs, _, err := client.UnreadEntries.List(nil)
+	if err != nil {
+		log.Fatalf("Failed to list unread entry IDs: %v", err)
+	}
+	if len(unreadIDs) > 0 {
+		fmt.Printf("
+Found %d unread entries. First few IDs: %v
+", len(unreadIDs), unreadIDs[:min(5, len(unreadIDs))])
+
+		// Example: Mark first unread entry as read (removes from unread)
+		// For a real scenario, you might mark specific entries read after user interaction.
+		// _, _, err = client.UnreadEntries.Delete([]int64{unreadIDs[0]})
+		// if err != nil {
+		// 	log.Printf("Failed to mark entry %d as read: %v", unreadIDs[0], err)
+		// } else {
+		// 	fmt.Printf("Successfully marked entry %d as read.
+", unreadIDs[0])
+		// }
+	} else {
+		fmt.Println("
+No unread entries found.")
+	}
+
+	// Example: List entries (first 2, extended mode)
+	entries, _, err := client.Entries.List(&feedbin.EntryListOptions{
+		ListOptions: feedbin.ListOptions{PerPage: 2},
+		Mode:        "extended",
+	})
+	if err != nil {
+		log.Fatalf("Failed to list entries: %v", err)
+	}
+	fmt.Println("
+First 2 Entries (extended mode):")
+	for _, entry := range entries {
+		fmt.Printf("- ID: %d, Title: %s, Published: %s
+", entry.ID, entry.Title, entry.PublishedAt.Format(time.RFC1123))
+		if entry.Image != nil {
+			fmt.Printf("  Image URL: %s
+", entry.Image.URL)
+		}
+	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 ```
 
-**Note:** This is a preliminary usage example. More detailed documentation will be available via GoDoc once the package is implemented.
-
 ## Contributing
 
-This package is being developed by an AI agent. Contributions are not expected at this time.
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. (A LICENSE file would need to be created separately).

@@ -1,7 +1,6 @@
-package feedbin
+package feedbinapi
 
 import (
-	"fmt"
 	"net/http"
 	// "github.com/google/go-querystring/query" // Not needed if no options
 )

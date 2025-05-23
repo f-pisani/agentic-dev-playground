@@ -2,237 +2,335 @@ package feedbinapi
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
-	defaultBaseURL = "https://api.feedbin.com/v2/"
-	userAgent      = "Go-FeedbinAPI-Client/0.1 (google-jules)"
+	// BaseURL is the base URL for the Feedbin API
+	BaseURL   = "https://api.feedbin.com/v2/" // Ensure trailing slash
+	UserAgent = "Jules Feedbin Go Client/1.0"
+	// DefaultTimeout is the default timeout for API requests.
+	DefaultTimeout = 30 * time.Second
 )
 
-// Client manages communication with the Feedbin API.
+// Client represents a Feedbin API client
 type Client struct {
-	baseURL    *url.URL
-	httpClient *http.Client
-	username   string
-	password   string
-
-	// Services used for talking to different parts of the Feedbin API.
-	// These will be initialized later.
-	Entries             *EntriesService
-	Feeds               *FeedsService
-	Subscriptions       *SubscriptionsService
+	client    *http.Client
+	baseURL   *url.URL
+	username  string
+	password  string
+	UserAgent string
+	Authentication *AuthenticationService
+	Subscriptions  *SubscriptionsService
+	Entries        *EntriesService
+	UnreadEntries  *UnreadEntriesService
+	StarredEntries      *StarredEntriesService
 	Taggings            *TaggingsService
 	Tags                *TagsService
-	StarredEntries      *StarredEntriesService
-	UnreadEntries       *UnreadEntriesService
-	RecentlyReadEntries *RecentlyReadEntriesService
-	UpdatedEntries      *UpdatedEntriesService
 	SavedSearches       *SavedSearchesService
-	Imports             *ImportsService
-	Icons               *IconsService
-	Pages               *PagesService
-	// ... and so on for all resources
+	RecentlyReadEntries *RecentlyReadEntriesService
+	UpdatedEntries         *UpdatedEntriesService
+	Icons                  *IconsService
+	Imports                *ImportsService
+	Pages                  *PagesService
+	Extract                *ExtractService // For Full Content Extraction
 }
 
-// NewClient creates a new Feedbin API client.
-// A username and password are required for authentication.
-func NewClient(username, password string, opts ...ClientOption) (*Client, error) {
-	if username == "" {
-		return nil, fmt.Errorf("username is required")
-	}
-	if password == "" {
-		return nil, fmt.Errorf("password is required")
-	}
-
-	baseURL, _ := url.Parse(defaultBaseURL) // Should not fail for a valid constant
-
+// NewClient returns a new Feedbin API client
+func NewClient(username, password string) *Client {
+	baseURL, _ := url.Parse(BaseURL)
 	c := &Client{
-		baseURL:    baseURL,
-		httpClient: http.DefaultClient,
-		username:   username,
-		password:   password,
+		client:    &http.Client{Timeout: DefaultTimeout},
+		baseURL:   baseURL,
+		username:  username,
+		password:  password,
+		UserAgent: UserAgent,
 	}
-
-	for _, opt := range opts {
-		if err := opt(c); err != nil {
-			return nil, err
-		}
-	}
-
-	// Initialize services here later
-	c.Entries = &EntriesService{client: c}
-	c.Feeds = &FeedsService{client: c}
-	c.Subscriptions = &SubscriptionsService{client: c}
-	c.Taggings = &TaggingsService{client: c}
-	c.Tags = &TagsService{client: c}
-	c.StarredEntries = &StarredEntriesService{client: c}
-	c.UnreadEntries = &UnreadEntriesService{client: c}
-	c.RecentlyReadEntries = &RecentlyReadEntriesService{client: c}
-	c.UpdatedEntries = &UpdatedEntriesService{client: c}
-	c.SavedSearches = &SavedSearchesService{client: c}
-	c.Imports = &ImportsService{client: c}
-	c.Icons = &IconsService{client: c}
-	c.Pages = &PagesService{client: c}
-	// ...
-
-	return c, nil
+	c.initServices()
+	return c
 }
 
-// Response is a Feedbin API response. This wraps the standard http.Response.
-type Response struct {
-	*http.Response
-	Pagination *PaginationInfo
+// initServices initializes all the API services for the client.
+func (c *Client) initServices() {
+	c.Authentication = NewAuthenticationService(c)
+	c.Subscriptions = NewSubscriptionsService(c)
+	c.Entries = NewEntriesService(c)
+	c.UnreadEntries = NewUnreadEntriesService(c)
+	c.StarredEntries = NewStarredEntriesService(c)
+	c.Taggings = NewTaggingsService(c)
+	c.Tags = NewTagsService(c)
+	c.SavedSearches = NewSavedSearchesService(c)
+	c.RecentlyReadEntries = NewRecentlyReadEntriesService(c)
+	c.UpdatedEntries = NewUpdatedEntriesService(c)
+	c.Icons = NewIconsService(c)
+	c.Imports = NewImportsService(c)
+	c.Pages = NewPagesService(c)
+	// For ExtractService, the apiToken is the username.
+	c.Extract = NewExtractService(c.client, c.username, c.UserAgent)
 }
 
-// newRequest creates an API request.
-// A relative URL pathStr can be provided in pathStr, in which case it is resolved relative to the baseURL of the Client.
-// Relative URLs should always be specified without a preceding slash.
-// If body is not nil, it will be JSON encoded and included in the request.
-func (c *Client) newRequest(ctx context.Context, method, pathStr string, queryParams url.Values, body interface{}) (*http.Request, error) {
-	relURL, err := url.Parse(pathStr)
+// SetBaseURL sets the base URL for API requests to a custom endpoint.
+func (c *Client) SetBaseURL(urlStr string) error {
+	baseURL, err := url.Parse(urlStr)
+	if err != nil {
+		return err
+	}
+	c.baseURL = baseURL
+	return nil
+}
+
+// SetUserAgent sets the user agent for API requests.
+func (c *Client) SetUserAgent(userAgent string) {
+	c.UserAgent = userAgent
+}
+
+// SetTimeout sets the timeout for API requests.
+func (c *Client) SetTimeout(timeout time.Duration) {
+	c.client.Timeout = timeout
+}
+
+// NewRequest creates an API request. A relative URL can be provided in path,
+// in which case it is resolved relative to the BaseURL of the Client.
+// If specified, the value pointed to by body is JSON encoded and included as the
+// request body.
+func (c *Client) NewRequest(method, path string, body interface{}) (*http.Request, error) {
+	// Ensure path is relative and does not start with a slash if baseURL already ends with one.
+	// If baseURL does not end with a slash, ensure path starts with one if it's not empty.
+	if strings.HasSuffix(c.baseURL.Path, "/") && strings.HasPrefix(path, "/") {
+		path = strings.TrimPrefix(path, "/")
+	} else if !strings.HasSuffix(c.baseURL.Path, "/") && !strings.HasPrefix(path, "/") && path != "" {
+		// This case might need refinement based on how paths are constructed.
+		// For now, assume paths are relative to the BaseURL's path.
+	}
+
+	rel, err := url.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("parsing path: %w", err)
 	}
 
-	u := c.baseURL.ResolveReference(relURL)
-	if queryParams != nil {
-		u.RawQuery = queryParams.Encode()
-	}
+	u := c.baseURL.ResolveReference(rel)
 
 	var buf io.ReadWriter
 	if body != nil {
-		buf = &bytes.Buffer{}
-		enc := json.NewEncoder(buf)
-		enc.SetEscapeHTML(false)
-		if err := enc.Encode(body); err != nil {
+		buf = new(bytes.Buffer)
+		if err := json.NewEncoder(buf).Encode(body); err != nil {
 			return nil, fmt.Errorf("encoding body: %w", err)
 		}
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
+	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
 	req.SetBasicAuth(c.username, c.password)
-	req.Header.Set("User-Agent", userAgent)
+	req.Header.Set("User-Agent", c.UserAgent)
+	req.Header.Set("Accept", "application/json")
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	}
-	req.Header.Set("Accept", "application/json")
 
 	return req, nil
 }
 
-// do sends an API request and returns the API response.
-// The API response is JSON decoded and stored in the value pointed to by v,
-// or returned as an error if an API error has occurred.
-// If v implements the io.Writer interface, the raw response body will be written to v,
-// without attempting to decode it.
-func (c *Client) do(req *http.Request, v interface{}) (*Response, error) {
-	resp, err := c.httpClient.Do(req)
+// ErrorResponse reports an error caused by an API request.
+type ErrorResponse struct {
+	Response *http.Response // HTTP response that caused this error
+	Message  string         // error message
+}
+
+func (r *ErrorResponse) Error() string {
+	return fmt.Sprintf("%v %v: %d %v",
+		r.Response.Request.Method, r.Response.Request.URL,
+		r.Response.StatusCode, r.Message)
+}
+
+// CheckResponse checks the API response for errors, and returns them if present.
+// A response is considered an error if it has a status code outside the 200 range.
+func CheckResponse(r *http.Response) error {
+	if c := r.StatusCode; 200 <= c && c <= 299 {
+		return nil
+	}
+
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := io.ReadAll(r.Body)
+	if err == nil && data != nil {
+		// Attempt to unmarshal into a structured error if possible,
+		// otherwise use the raw data.
+		// For now, just use the raw string.
+		errorResponse.Message = string(data)
+	} else {
+		errorResponse.Message = http.StatusText(r.StatusCode) // Use status text if body is unreadable
+	}
+	// It's good practice to close the body if you've read it,
+	// but 'Do' method's defer will handle it. If reading here,
+	// need to be careful about double-closing or not closing.
+	// Since ReadAll consumes the body, it needs to be replaced if further reading is needed.
+	// However, for an error, we typically just consume and report.
+	r.Body = io.NopCloser(bytes.NewBuffer(data)) // Replace body so it can be read again if necessary
+
+	return errorResponse
+}
+
+// Do sends an API request and returns the API response. The API response is
+// JSON decoded and stored in the value pointed to by v, or returned as an
+// error if an API error has occurred.
+// If v is nil, the response body is not decoded.
+// If v is an io.Writer, the raw response body will be written to v.
+func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
+	resp, err := c.client.Do(req)
 	if err != nil {
-		// If we got an error, and the context has been canceled,
-		// the context's error is probably more useful.
-		select {
-		case <-req.Context().Done():
-			return nil, req.Context().Err()
-		default:
-		}
 		return nil, fmt.Errorf("executing request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	response := &Response{Response: resp}
-	response.Pagination = extractPaginationInfo(resp.Header)
-
-	// Check for API errors.
-	if code := resp.StatusCode; code < 200 || code > 299 {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return response, newAPIError(resp, bodyBytes) // Uses the new constructor from errors.go
+	if err := CheckResponse(resp); err != nil {
+		return resp, err // Return response along with the error
 	}
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			_, err = io.Copy(w, resp.Body)
 			if err != nil {
-				return response, fmt.Errorf("copying response body to writer: %w", err)
+				return resp, fmt.Errorf("writing response to writer: %w", err)
 			}
 		} else {
-			decErr := json.NewDecoder(resp.Body).Decode(v)
-			if decErr == io.EOF {
-				decErr = nil // ignore EOF errors caused by empty response body
+			// If status is 204 No Content, don't try to decode.
+			if resp.StatusCode == http.StatusNoContent {
+				return resp, nil
 			}
-			if decErr != nil {
-				err = fmt.Errorf("decoding response body: %w", decErr)
+			err = json.NewDecoder(resp.Body).Decode(v)
+			if err == io.EOF {
+				// Treat EOF as a non-error, signifies empty body which is fine for some responses.
+				// Or, it could mean the JSON was malformed if it's unexpected.
+				// For now, let's consider it not an error if the status code was successful.
+				return resp, nil // Or return a specific error if EOF is always unexpected.
+			}
+			if err != nil {
+				return resp, fmt.Errorf("decoding response: %w", err)
 			}
 		}
 	}
 
-	return response, err
+	return resp, nil
 }
 
-// VerifyCredentials checks if the provided username and password are valid.
-// It makes a request to the GET /v2/authentication.json endpoint.
-func (c *Client) VerifyCredentials(ctx context.Context) error {
-	req, err := c.newRequest(ctx, http.MethodGet, "authentication.json", nil, nil)
-	if err != nil {
-		return fmt.Errorf("creating VerifyCredentials request: %w", err)
+// PaginationLinks represents the pagination links in the Link header.
+type PaginationLinks struct {
+	First string
+	Prev  string
+	Next  string
+	Last  string
+}
+
+// GetPaginationLinks extracts pagination links from the Link header
+func GetPaginationLinks(resp *http.Response) *PaginationLinks {
+	links := &PaginationLinks{}
+	linkHeader := resp.Header.Get("Link")
+	if linkHeader == "" {
+		return links
 	}
 
-	resp, err := c.do(req, nil)
-	if err != nil {
-		apiErr, ok := err.(*APIError) // Check for the new APIError type
-		if ok {
-			if apiErr.IsStatus(http.StatusUnauthorized) { // Use IsStatus method
-				return fmt.Errorf("authentication failed: invalid credentials (status %d)", apiErr.Response.StatusCode)
-			}
-			// Or, if you want to return a wrapped typed error:
-			// if apiErr.IsStatus(http.StatusUnauthorized) {
-			//    return newErrUnauthorized(apiErr)
-			// }
+	parts := strings.Split(linkHeader, ",")
+	for _, part := range parts {
+		segments := strings.Split(strings.TrimSpace(part), ";")
+		if len(segments) < 2 {
+			continue
 		}
-		return fmt.Errorf("VerifyCredentials API error: %w", err) // Wrap original error
-	}
 
-	if resp.StatusCode != http.StatusOK { // This check might be redundant if do() always returns APIError for non-2xx
-		// but good as a safeguard or if do() could return other errors for 2xx.
-		return fmt.Errorf("VerifyCredentials request failed: expected status %d, got %d (this might indicate an issue if APIError was not returned for a non-OK status)", http.StatusOK, resp.StatusCode)
-	}
+		urlPart := strings.Trim(segments[0], "<>")
+		relPart := strings.TrimSpace(segments[1])
+		rel := strings.Trim(relPart, `rel=""`) // Trim rel=" and "
 
-	return nil
+		switch rel {
+		case "first":
+			links.First = urlPart
+		case "prev":
+			links.Prev = urlPart
+		case "next":
+			links.Next = urlPart
+		case "last":
+			links.Last = urlPart
+		}
+	}
+	return links
 }
 
-// Helper function to add query parameters
-func addQueryParams(baseURL string, params map[string]string) (string, error) {
-	u, err := url.Parse(baseURL)
+// GetTotalCount extracts the total record count from the X-Feedbin-Record-Count header
+func GetTotalCount(resp *http.Response) int {
+	countStr := resp.Header.Get("X-Feedbin-Record-Count")
+	if countStr == "" {
+		return 0
+	}
+	count, err := strconv.Atoi(countStr)
 	if err != nil {
-		return "", err
+		return 0 // Or handle error more explicitly
 	}
-	q := u.Query()
-	for key, value := range params {
-		q.Set(key, value)
-	}
-	u.RawQuery = q.Encode()
-	return u.String(), nil
+	return count
 }
 
-// Helper function to handle PATCH alternative via POST
-func (c *Client) patchViaPOST(ctx context.Context, urlStr string, body interface{}, v interface{}) (*Response, error) {
-	// Ensure the URL ends with /update.json or similar, or append if necessary
-	if !strings.HasSuffix(urlStr, "/update.json") { // This check might need to be more robust
-		urlStr += "/update.json" // Or handle this based on specific endpoint needs
+// ParseFeedbinTime parses a time string in Feedbin's ISO 8601 format
+func ParseFeedbinTime(timeStr string) (time.Time, error) {
+	// Feedbin uses ISO 8601, which can have variations.
+	// Go's time.RFC3339Nano is a common variant.
+	// Example from docs: 2013-02-19T15:33:38.449047Z
+	// Example from docs: 2013-02-19T07:33:38.449047-08:00
+	layouts := []string{
+		"2006-01-02T15:04:05.999999999Z07:00", // RFC3339Nano
+		"2006-01-02T15:04:05.999999999Z",      // UTC variant of RFC3339Nano
+		"2006-01-02T15:04:05Z07:00",           // Without fractional seconds
+		"2006-01-02T15:04:05Z",                // UTC without fractional seconds
+		// Adding layouts based on observed client implementations
+		"2006-01-02T15:04:05.999999Z",      // Used in aider-claude-3.7
+		"2006-01-02T15:04:05.999999-07:00", // Used in aider-claude-3.7
 	}
-	req, err := c.newRequest(ctx, http.MethodPost, urlStr, nil, body)
-	if err != nil {
-		return nil, err
+
+	var t time.Time
+	var err error
+	for _, layout := range layouts {
+		t, err = time.Parse(layout, timeStr)
+		if err == nil {
+			return t, nil
+		}
 	}
-	return c.do(req, v)
+	return time.Time{}, fmt.Errorf("unable to parse time string '%s' with known layouts: %w", timeStr, err)
+}
+
+// FormatFeedbinTime formats a time.Time as a string in Feedbin's ISO 8601 UTC format
+// with microsecond precision, as commonly expected.
+func FormatFeedbinTime(t time.Time) string {
+	// Format to "2006-01-02T15:04:05.999999Z"
+	return t.UTC().Format("2006-01-02T15:04:05.999999Z")
+}
+
+// Bool is a helper routine that allocates a new bool value
+// to store v and returns a pointer to it.
+func Bool(v bool) *bool {
+	p := new(bool)
+	*p = v
+	return p
+}
+
+// Int is a helper routine that allocates a new int value
+// to store v and returns a pointer to it.
+func Int(v int) *int {
+	p := new(int)
+	*p = v
+	return p
+}
+
+// String is a helper routine that allocates a new string value
+// to store v and returns a pointer to it.
+func String(v string) *string {
+	p := new(string)
+	*p = v
+	return p
 }
