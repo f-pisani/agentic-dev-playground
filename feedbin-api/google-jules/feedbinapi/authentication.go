@@ -1,4 +1,4 @@
-package feedbin
+package feedbinapi
 
 import (
 	"net/http"
