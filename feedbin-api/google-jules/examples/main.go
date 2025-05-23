@@ -10,7 +10,7 @@ import (
 	// relative to this example, or if it's in GOPATH/GOROOT.
 	// If `jules-feedbin-client` is the module name and this `examples` dir
 	// is inside it, the import path would be:
-	feedbin "jules-feedbin-client"
+	feedbin "jules-feedbin-client/feedbinapi"
 	// If the client were hosted on GitHub, it might be:
 	// feedbin "github.com/yourusername/jules-feedbin-client"
 )

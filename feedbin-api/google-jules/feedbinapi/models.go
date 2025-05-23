@@ -3,293 +3,193 @@ package feedbinapi
 import "time"
 
 // Entry represents a single feed entry.
+// Based on specs/content/entries.md and existing clients.
 type Entry struct {
-	ID                  int64              `json:"id"`
-	FeedID              int64              `json:"feed_id"`
-	Title               *string            `json:"title"`
-	URL                 *string            `json:"url"`
-	ExtractedContentURL *string            `json:"extracted_content_url,omitempty"`
-	Author              *string            `json:"author"`
-	Content             *string            `json:"content"` // HTML content
-	Summary             *string            `json:"summary"`
-	Published           time.Time          `json:"published"`
-	CreatedAt           time.Time          `json:"created_at"`
-	Original            *OriginalEntry     `json:"original,omitempty"`           // Included with include_original=true
-	Images              *EntryImages       `json:"images,omitempty"`             // Extended mode
-	Enclosure           *EntryEnclosure    `json:"enclosure,omitempty"`          // Extended mode or include_enclosure=true
-	TwitterID           *int64             `json:"twitter_id,omitempty"`         // Extended mode
-	TwitterThreadIDs    []int64            `json:"twitter_thread_ids,omitempty"` // Extended mode
-	ExtractedArticles   []ExtractedArticle `json:"extracted_articles,omitempty"` // Extended mode
-	JSONFeed            *JSONFeedData      `json:"json_feed,omitempty"`          // Extended mode
-	ContentDiff         *string            `json:"content_diff,omitempty"`       // Included with include_content_diff=true
+	ID          int64     `json:"id"`
+	FeedID      int64     `json:"feed_id"`
+	Title       string    `json:"title"`
+	URL         string    `json:"url"`
+	Author      string    `json:"author"`
+	Content     string    `json:"content"` // HTML content
+	Summary     string    `json:"summary"`
+	PublishedAt time.Time `json:"published_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"` // Added based on common practice
+
+	// Fields from "extended" mode or other contexts
+	Image       *EntryImage `json:"image,omitempty"`
+	Source      string      `json:"source,omitempty"`      // e.g. name of the website
+	Twitter     *TwitterData `json:"twitter,omitempty"`   // If entry is from Twitter
+	ExtractedAt *time.Time   `json:"extracted_at,omitempty"` // If content was extracted
+	Original    *OriginalData `json:"original,omitempty"`  // Original entry data if updated
 }
 
-// OriginalEntry represents the original version of an entry if it has been updated.
-type OriginalEntry struct {
-	Author    *string   `json:"author"`
-	Content   *string   `json:"content"`
-	Title     *string   `json:"title"`
-	URL       *string   `json:"url"`
-	EntryID   string    `json:"entry_id"` // Note: This is a string in the example
-	Published time.Time `json:"published"`
-	Data      *struct{} `json:"data"` // Example shows null or empty object, define if structure known
+// EntryImage represents an image associated with an entry.
+type EntryImage struct {
+	URL    string `json:"url"`
+	Width  int    `json:"width,omitempty"`
+	Height int    `json:"height,omitempty"`
 }
 
-// EntryImages represents images associated with an entry.
-type EntryImages struct {
-	OriginalURL *string     `json:"original_url"`
-	Size1       *SizedImage `json:"size_1,omitempty"` // Example shows "size_1", there might be others
-	// Add other sizes if the API defines them (e.g., Size2, Size3)
+// TwitterData holds Twitter-specific information for an entry.
+// Based on specs/content/supporting-twitter.md
+type TwitterData struct {
+	TweetID         string `json:"twitter_tweet_id,omitempty"`
+	ScreenName      string `json:"twitter_screen_name,omitempty"`
+	Name            string `json:"twitter_name,omitempty"`
+	ProfileImageURL string `json:"twitter_profile_image_url,omitempty"`
+	RetweetedBy     string `json:"twitter_retweeted_by_screen_name,omitempty"` // Screen name of retweeter
 }
 
-// SizedImage represents a specific size of an image with CDN URL.
-type SizedImage struct {
-	CDNURL *string `json:"cdn_url"`
-	Width  *int    `json:"width"`
-	Height *int    `json:"height"`
+// OriginalData holds the original content of an entry if it has been updated.
+type OriginalData struct {
+	URL         string `json:"url,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Author      string `json:"author,omitempty"`
+	Content     string `json:"content,omitempty"`
+	Summary     string `json:"summary,omitempty"`
+	PublishedAt string `json:"published_at,omitempty"` // Keep as string if unsure about parsing non-standard original dates
 }
 
-// EntryEnclosure represents podcast/RSS enclosure data.
-type EntryEnclosure struct {
-	URL            *string `json:"enclosure_url"`
-	Type           *string `json:"enclosure_type"`
-	Length         *string `json:"enclosure_length"` // String because example "54103635" might be large for int32
-	ITunesDuration *string `json:"itunes_duration,omitempty"`
-	ITunesImage    *string `json:"itunes_image,omitempty"`
-}
 
-// ExtractedArticle represents an article extracted from a link in an entry (e.g., a tweet).
-type ExtractedArticle struct {
-	URL     *string `json:"url"`
-	Title   *string `json:"title"`
-	Host    *string `json:"host"`
-	Author  *string `json:"author"`
-	Content *string `json:"content"` // HTML content
-}
-
-// JSONFeedData holds additional metadata if the entry is from a JSON Feed.
-// This structure might be shared between Entry and Subscription.
-type JSONFeedData struct {
-	Version     *string   `json:"version,omitempty"`
-	UserComment *string   `json:"user_comment,omitempty"`
-	NextURL     *string   `json:"next_url,omitempty"`
-	Icon        *string   `json:"icon,omitempty"`
-	Favicon     *string   `json:"favicon,omitempty"`
-	Author      *struct { // JSONFeed author object
-		Name   *string `json:"name,omitempty"`
-		URL    *string `json:"url,omitempty"`
-		Avatar *string `json:"avatar,omitempty"`
-	} `json:"author,omitempty"`
-	Expired *bool `json:"expired,omitempty"`
-	Hubs    []struct {
-		Type *string `json:"type,omitempty"`
-		URL  *string `json:"url,omitempty"`
-	} `json:"hubs,omitempty"`
-	// Fields specific to Entry's JSONFeed data (if any)
-	FeedURL     *string `json:"feed_url,omitempty"`      // Present in Subscription's JSONFeed
-	HomePageURL *string `json:"home_page_url,omitempty"` // Present in Subscription's JSONFeed
-	Title       *string `json:"title,omitempty"`         // Present in Subscription's JSONFeed
-}
-
-// Feed represents a single feed.
-type Feed struct {
-	ID      int64   `json:"id"`
-	Title   *string `json:"title"`
-	FeedURL *string `json:"feed_url"`
-	SiteURL *string `json:"site_url"`
-}
-
-// Subscription represents a user's subscription to a feed.
+// Subscription (Feed) represents a subscribed feed.
+// Based on specs/content/subscriptions.md
 type Subscription struct {
-	ID        int64         `json:"id"`
-	CreatedAt time.Time     `json:"created_at"`
-	FeedID    int64         `json:"feed_id"`
-	Title     string        `json:"title"`               // Docs show this as required
-	FeedURL   string        `json:"feed_url"`            // Docs show this as required
-	SiteURL   string        `json:"site_url"`            // Docs show this as required
-	JSONFeed  *JSONFeedData `json:"json_feed,omitempty"` // Extended mode
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	FeedID    int64     `json:"feed_id"`
+	Title     string    `json:"title"`
+	FeedURL   string    `json:"feed_url"`
+	SiteURL   string    `json:"site_url"`
+	// Extended fields
+	IsSpark    *bool   `json:"is_spark,omitempty"`
+	IsPodcast  *bool   `json:"is_podcast,omitempty"`
+	IsTwitter  *bool   `json:"is_twitter,omitempty"`
+	HasIcon    *bool   `json:"has_icon,omitempty"`
+	Icon       *Icon   `json:"icon,omitempty"` // Potentially link to Icon struct
+	FeedStats  *FeedStats `json:"feed_stats,omitempty"`
 }
 
-// Tagging represents a tag applied to a feed.
-type Tagging struct {
-	ID     int64  `json:"id"`
-	FeedID int64  `json:"feed_id"`
-	Name   string `json:"name"`
+// FeedStats contains statistics for a feed.
+// Part of extended subscription data.
+type FeedStats struct {
+	Subscribers      int    `json:"subscribers"`
+	EntriesPerDay    float64 `json:"entries_per_day"`
+	LastEntryAt      *time.Time `json:"last_entry_at,omitempty"`
+	LastStatus       string `json:"last_status,omitempty"` // e.g., "ok", "error"
+	LastStatusAt     *time.Time `json:"last_status_at,omitempty"`
+	ConsecutiveErrors int   `json:"consecutive_errors"`
 }
 
-// SavedSearch represents a user's saved search query.
-type SavedSearch struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Query string `json:"query"`
-}
-
-// Import represents an OPML import process.
-type Import struct {
-	ID          int64         `json:"id"`
-	Complete    bool          `json:"complete"`
-	CreatedAt   time.Time     `json:"created_at"`
-	ImportItems []*ImportItem `json:"import_items,omitempty"` // Only present when getting a specific import
-}
-
-// ImportItem represents a single item within an OPML import.
-type ImportItem struct {
-	Title   *string `json:"title"`
-	FeedURL *string `json:"feed_url"`
-	Status  *string `json:"status"` // "pending", "complete", "failed"
-}
-
-// Icon represents a favicon for a feed.
-type Icon struct {
-	Host *string `json:"host"`
-	URL  *string `json:"url"`
-}
-
-// PageCreateRequest is used to create a new page (entry from URL).
-type PageCreateRequest struct {
-	URL   string  `json:"url"`
-	Title *string `json:"title,omitempty"`
-}
-
-// --- Request/Response Structs for specific actions ---
-
-// StarredEntryRequest is used for POST/DELETE bodies for starred entries.
-type StarredEntryRequest struct {
-	StarredEntries []int64 `json:"starred_entries"`
-}
-
-// UnreadEntryRequest is used for POST/DELETE bodies for unread entries.
-type UnreadEntryRequest struct {
-	UnreadEntries []int64 `json:"unread_entries"`
-}
-
-// RecentlyReadEntryRequest is used for POST bodies for recently_read entries.
-type RecentlyReadEntryRequest struct {
-	RecentlyReadEntries []int64 `json:"recently_read_entries"`
-}
-
-// UpdatedEntryRequest is used for DELETE bodies for updated_entries.
-type UpdatedEntryRequest struct {
-	UpdatedEntries []int64 `json:"updated_entries"`
-}
-
-// CreateSubscriptionRequest is used to create a new subscription.
-type CreateSubscriptionRequest struct {
-	FeedURL string `json:"feed_url"`
-}
-
-// UpdateSubscriptionRequest is used to update a subscription (e.g., title).
-type UpdateSubscriptionRequest struct {
-	Title string `json:"title"`
-}
-
-// CreateTaggingRequest is used to create a new tagging.
-type CreateTaggingRequest struct {
-	FeedID int64  `json:"feed_id"`
-	Name   string `json:"name"`
-}
-
-// RenameTagRequest is used to rename a tag.
-type RenameTagRequest struct {
-	OldName string `json:"old_name"`
-	NewName string `json:"new_name"`
-}
-
-// DeleteTagRequest is used to delete a tag.
-type DeleteTagRequest struct {
+// Tag represents a tag.
+// Based on specs/content/tags.md
+type Tag struct {
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
+	// FeedIDs []int64 `json:"feed_ids,omitempty"` // This seems to be part of Taggings, not the Tag object itself.
 }
 
-// CreateSavedSearchRequest is used to create a saved search.
-type CreateSavedSearchRequest struct {
-	Name  string `json:"name"`
-	Query string `json:"query"`
+// Tagging represents a tagging of an entry with a tag.
+// Based on specs/content/taggings.md
+type Tagging struct {
+	ID        int64     `json:"id"`
+	FeedID    int64     `json:"feed_id"`
+	EntryID   int64     `json:"entry_id"`
+	Name      string    `json:"name"`      // Tag name
+	CreatedAt time.Time `json:"created_at"` // Added, as it's common
 }
 
-// UpdateSavedSearchRequest is used to update a saved search.
-type UpdateSavedSearchRequest struct {
-	Name *string `json:"name,omitempty"` // Only name can be updated based on docs
+// SavedSearch represents a saved search query.
+// Based on specs/content/saved-searches.md
+type SavedSearch struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Query     string    `json:"query"`
+	CreatedAt time.Time `json:"created_at"`
+	// FeedIDs   []int64   `json:"feed_ids,omitempty"` // Optional: feeds to search within
 }
 
-// --- Parameter Structs for List operations ---
-
-// ListEntriesParams holds parameters for listing entries.
-type ListEntriesParams struct {
-	Page               *int    `url:"page,omitempty"`
-	Since              *string `url:"since,omitempty"` // ISO 8601 date
-	IDs                []int64 `url:"ids,omitempty,comma"`
-	Read               *bool   `url:"read,omitempty"`
-	Starred            *bool   `url:"starred,omitempty"`
-	PerPage            *int    `url:"per_page,omitempty"`
-	Mode               *string `url:"mode,omitempty"` // "extended"
-	IncludeOriginal    *bool   `url:"include_original,omitempty"`
-	IncludeEnclosure   *bool   `url:"include_enclosure,omitempty"`
-	IncludeContentDiff *bool   `url:"include_content_diff,omitempty"`
+// RecentlyReadEntry indicates an entry that was recently read.
+// Based on specs/content/recently-read-entries.md
+type RecentlyReadEntry struct {
+	EntryID      int64     `json:"entry_id"`
+	Interaction  string    `json:"interaction"` // e.g., "read", "scrolled"
+	InteractedAt time.Time `json:"interacted_at"`
 }
 
-// ListSubscriptionsParams holds parameters for listing subscriptions.
-type ListSubscriptionsParams struct {
-	Since *string `url:"since,omitempty"` // ISO 8601 date
-	Mode  *string `url:"mode,omitempty"`  // "extended"
+// UpdatedEntryID refers to an entry ID that has been updated.
+// Based on specs/content/updated-entries.md
+// This endpoint returns an array of entry IDs, so a specific struct might not be needed
+// unless there's more structure to it. For now, assume it's []int64.
+
+// Icon represents a feed icon.
+// Based on specs/content/icons.md
+type Icon struct {
+	Host      string `json:"host"`
+	Data      string `json:"data"` // Base64 encoded image data
+	Extension string `json:"extension"` // e.g., "png", "ico"
 }
 
-// GetSubscriptionParams holds parameters for getting a single subscription.
-type GetSubscriptionParams struct {
-	Mode *string `url:"mode,omitempty"` // "extended"
+// Import represents an OPML import job.
+// Based on specs/content/imports.md
+type Import struct {
+	ID          int64      `json:"id"`
+	Status      string     `json:"status"` // e.g., "pending", "running", "complete", "error"
+	Message     string     `json:"message,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	TotalFeeds  int        `json:"total_feeds,omitempty"`
+	Imported    int        `json:"imported_feeds,omitempty"` // Corrected field name based on common sense
+	Unchanged   int        `json:"unchanged_feeds,omitempty"`
+	Errored     int        `json:"errored_feeds,omitempty"`
 }
 
-// GetSavedSearchParams holds parameters for getting a saved search's entries.
-type GetSavedSearchParams struct {
-	IncludeEntries *bool `url:"include_entries,omitempty"`
-	Page           *int  `url:"page,omitempty"` // Only if include_entries=true
+// Page represents a downloaded page.
+// Based on specs/content/pages.md
+type Page struct {
+	EntryID       int64     `json:"entry_id"`
+	Body          string    `json:"body"` // HTML content of the page
+	ExtractedFrom string    `json:"extracted_from"` // URL it was extracted from
+	WordCount     int       `json:"word_count"`
+	Processed     bool      `json:"processed"`
+	PublishedAt   time.Time `json:"published_at"`
+	Domain        string    `json:"domain"`
+	Path          string    `json:"path"`
+	// Image URLs and other extracted info might be here too, TBD from actual API response if needed.
 }
 
-// ListUpdatedEntryIDsParams holds parameters for listing updated entry IDs.
-type ListUpdatedEntryIDsParams struct {
-	Since *string `url:"since,omitempty"` // ISO 8601 date
+// ExtractResult represents the result of a content extraction.
+// Based on specs/content/extract-full-content.md
+type ExtractResult struct {
+	URL         string `json:"url"`
+	Title       string `json:"title,omitempty"`
+	Author      string `json:"author,omitempty"`
+	PublishedAt string `json:"published_at,omitempty"` // String because format isn't guaranteed ISO 8601
+	Dek         string `json:"dek,omitempty"`          // Subtitle or summary
+	LeadImageURL string `json:"lead_image_url,omitempty"`
+	Content     string `json:"content"` // HTML content
+	NextPageURL string `json:"next_page_url,omitempty"`
+	Excerpt     string `json:"excerpt,omitempty"`
+	WordCount   int    `json:"word_count,omitempty"`
+	Direction   string `json:"direction,omitempty"` // e.g., "ltr", "rtl"
+	// Other fields like domain, total_pages, rendered_pages, etc.
 }
 
-// GetEntryParams holds parameters for getting a single entry.
-// Similar to ListEntriesParams but contextually for a single entry.
-type GetEntryParams struct {
-	Mode               *string `url:"mode,omitempty"` // "extended"
-	IncludeOriginal    *bool   `url:"include_original,omitempty"`
-	IncludeEnclosure   *bool   `url:"include_enclosure,omitempty"`
-	IncludeContentDiff *bool   `url:"include_content_diff,omitempty"`
+// General API Options Structs
+
+// ListOptions provides general options for list methods.
+type ListOptions struct {
+	Page    int  `url:"page,omitempty"`
+	PerPage int  `url:"per_page,omitempty"`
+	Since   string `url:"since,omitempty"` // ISO 8601 date string
 }
 
-// MultipleFeedChoice represents one choice when feed discovery yields multiple feeds.
-type MultipleFeedChoice struct {
-	FeedURL string `json:"feed_url"`
-	Title   string `json:"title"`
+// ModeOption allows specifying the "mode" parameter (e.g., "extended").
+type ModeOption struct {
+	Mode string `url:"mode,omitempty"` // e.g., "extended"
 }
 
-// Page represents a single "page" resource (entry created from a URL)
-// The API returns an Entry struct for a page, so we can reuse Entry.
-// However, the create operation uses PageCreateRequest.
-// No specific Page struct is needed for responses if it's identical to Entry.
-
-// TaggingsOnEntry represents the tags associated with a specific entry.
-// The API returns an array of strings (tag names).
-// Example: ["tag1", "tag2"]
-// So, a `[]string` will suffice for this.
-
-// PresignedS3Upload represents the response from POST /v2/presigned_s3_uploads.json
-// This is used for OPML import.
-type PresignedS3Upload struct {
-	URL            string            `json:"url"`            // The URL to PUT the file to
-	Fields         map[string]string `json:"fields"`         // Form fields to include in the PUT request
-	Path           string            `json:"path"`           // The path of the file on S3 (used to create import)
-	Method         string            `json:"method"`         // Should be "put"
-	ACL            string            `json:"acl"`            // e.g., "private"
-	Key            string            `json:"key"`            // The key (filename) on S3
-	AWSAccessKeyID string            `json:"AWSAccessKeyId"` // Note the casing
-	Policy         string            `json:"Policy"`
-	Signature      string            `json:"Signature"`
-	ContentType    string            `json:"Content-Type"`
-}
-
-// CreateImportRequest is used to create an import after uploading an OPML file.
-type CreateImportRequest struct {
-	Path string `json:"path"` // The 'path' from the PresignedS3Upload response
+// IDsOption is for endpoints that accept a list of IDs.
+type IDsOption struct {
+	IDs []int64 `url:"ids,comma"` // Will be sent as "ids=1,2,3"
 }
