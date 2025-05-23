@@ -1,10 +1,8 @@
-package feedbin
+package feedbinapi
 
 import (
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings" // Required for addOptions, if used.
 
 	"github.com/google/go-querystring/query"

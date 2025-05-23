@@ -1,9 +1,8 @@
-package feedbin
+package feedbinapi
 
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/google/go-querystring/query"
 )
