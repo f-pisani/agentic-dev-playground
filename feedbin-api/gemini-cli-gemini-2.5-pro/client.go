@@ -446,7 +446,7 @@ func (c *Client) StarEntries(ids []int64) ([]int64, error) {
 	return starredEntries, err
 }
 
-// UnstarEntries unstares the given entry IDs.
+// UnstarEntries unstars the given entry IDs.
 func (c *Client) UnstarEntries(ids []int64, usePostAlternative ...bool) ([]int64, error) {
 	body := map[string][]int64{"starred_entries": ids}
 	path := "starred_entries.json"
