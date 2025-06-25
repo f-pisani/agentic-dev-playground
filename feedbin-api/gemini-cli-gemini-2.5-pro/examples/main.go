@@ -21,7 +21,11 @@ func main() {
 	authenticated, err := client.Authenticate()
 	if err != nil {
 		if apiErr, ok := err.(*feedbin.APIError); ok {
-			fmt.Printf("Failed to authenticate: %s (status code: %d)\n", apiErr.Message, apiErr.Response.StatusCode)
+			if apiErr.Response != nil {
+				fmt.Printf("Failed to authenticate: %s (status code: %d)\n", apiErr.Message, apiErr.Response.StatusCode)
+			} else {
+				fmt.Printf("Failed to authenticate: %s\n", apiErr.Message)
+			}
 		} else {
 			fmt.Printf("An unexpected error occurred: %s\n", err)
 		}
